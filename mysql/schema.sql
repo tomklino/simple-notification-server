@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE TABLE IF NOT EXISTS topics (
     topic_id INT AUTO_INCREMENT,
-    identifier VARCHAR(1023) NOT NULL,
+    name VARCHAR(1023) NOT NULL,
     PRIMARY KEY (topic_id)
 )  ENGINE=INNODB;
 
