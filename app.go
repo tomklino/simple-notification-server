@@ -112,6 +112,7 @@ func main() {
 	)
 
 	r.Put("/client/{token}", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("PUT client\n")
 		clientToken := chi.URLParam(r, "token")
 		log.Printf("PUT client. token: %s\n", clientToken)
 		stmtInsertClient, _ := db.Prepare("INSERT INTO clients (token) VALUES (?)")
@@ -184,13 +185,20 @@ func main() {
 		out, err := json.Marshal(subscriptionRequest)
 		log.Printf("subscriptionRequest parsed to %s\n", out)
 		log.Printf("POST subscribe. clientId: %d, topicId: %d\n", subscriptionRequest.ClientId, subscriptionRequest.TopicId)
-		stmtInsertSubscription, _ := db.Prepare("INSERT INTO subscriptions (client_id, topic_id) VALUES (?, ?)")
+		stmtInsertSubscription, err := db.Prepare("INSERT INTO subscriptions (client_id, topic_id) VALUES (?, ?)")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			log.Println(err)
+			return;
+		}
 		result, err := stmtInsertSubscription.Exec(
 			subscriptionRequest.ClientId, subscriptionRequest.TopicId)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("500 - Something bad happened!"))
+			log.Println(err)
 			return;
 		}
 
