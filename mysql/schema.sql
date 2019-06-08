@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS topics (
     PRIMARY KEY (topic_id)
 )  ENGINE=INNODB;
 
-CREATE TABLE IF NOT EXISTS subsciptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
     subsciption_id INT AUTO_INCREMENT,
     client_id INT NOT NULL,
     topic_id INT NOT NULL,

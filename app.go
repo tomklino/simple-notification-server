@@ -137,5 +137,92 @@ func main() {
 		}
 		w.Write(js)
 	})
+
+	r.Put("/topic/{name}", func(w http.ResponseWriter, r *http.Request) {
+		topicName := chi.URLParam(r, "name")
+		log.Printf("PUT topic. name: %s\n", topicName)
+		stmtInsertTopic, _ := db.Prepare("INSERT INTO topics (name) VALUES (?)")
+		result, err := stmtInsertTopic.Exec(topicName)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+		topicId, err := result.LastInsertId()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+		response := IdResponse{"ok", strconv.FormatInt(topicId, 10)}
+		// w.Write([]byte(strconv.FormatInt(clientId, 10)))
+		js, err := json.Marshal(response)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+		w.Write(js)
+	})
+
+	r.Post("/subscribe", func(w http.ResponseWriter, r *http.Request) {
+		var subscriptionRequest SubscriptionRequest
+		b, err := ioutil.ReadAll(r.Body)
+		log.Printf("raw body: %s\n", b)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		// Unmarshal
+		err = json.Unmarshal(b, &subscriptionRequest)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		out, err := json.Marshal(subscriptionRequest)
+		log.Printf("subscriptionRequest parsed to %s\n", out)
+		log.Printf("POST subscribe. clientId: %d, topicId: %d\n", subscriptionRequest.ClientId, subscriptionRequest.TopicId)
+		stmtInsertSubscription, _ := db.Prepare("INSERT INTO subscriptions (client_id, topic_id) VALUES (?, ?)")
+		result, err := stmtInsertSubscription.Exec(
+			subscriptionRequest.ClientId, subscriptionRequest.TopicId)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+
+		subscriptionId, err := result.LastInsertId()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+		response := IdResponse{"ok", strconv.FormatInt(subscriptionId, 10)}
+		// w.Write([]byte(strconv.FormatInt(clientId, 10)))
+		js, err := json.Marshal(response)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return;
+		}
+		w.Write(js)
+	})
+
+	r.Post("/testmessage", func(w http.ResponseWriter, r *http.Request) {
+		to := testToken
+		go sendMessage("test title", "test message", to)
+		w.Write([]byte("OK"))
+	})
+
+	r.Post("/topic/{name}", func(w http.ResponseWriter, r *http.Request) {
+		topicName := chi.URLParam(r, "name")
+		log.Printf("POST topic. name: %s\n", topicName)
+		w.Write([]byte("NOT IMPLEMENTED"))
+	})
+
+	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", r)
 }
