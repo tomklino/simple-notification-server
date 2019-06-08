@@ -6,6 +6,7 @@ RUN go get -d ./...
 RUN go build -o app
 
 FROM alpine:3.9
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /workspace/app /app/app
 ENTRYPOINT ./app
