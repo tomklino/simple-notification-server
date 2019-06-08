@@ -1,9 +1,37 @@
 version: '3'
 services:
-  app:
-    build: .
+  dev:
+    image: golang:1.12-stretch
+    command: ./dev_entrypoint.sh
+    working_dir: /workspace
+    depends_on:
+      - mysql
+    volumes:
+      - .:/workspace
     ports:
       - "8080:8080"
+    environment:
+      - DB__NAME=simple-notifications
+      - DB__PASS=1234
+      - DB__HOST=mysql
+      - DB__PORT=3306
+      - TEST_TOKEN=dFD_xVCueR8:APA91bEmLFf7-7R--HO3PFsVGacKHCnJ0K2bhsdRaM7hhgRbgeZijbk1jysjqylQU36K58FFQeooqIub3a180JeTWbfPK37YoVEW6M1cM5TfgH1P1kd26eYnghh0m437uJ5CL3usKhzb
+      - WEBHOOK=https://fcm.googleapis.com/fcm/send
+      - AUTH_HEADER=key=AAAA_0UuTtQ:APA91bEaPoxKJeT00DAgRpQXC4dfJaNqsRUkxNj6UMe-IUh1CfcQsJ3AZMTceT9HX2u06mznkr08-Ee_mpV9rmJKa4JSWmvjszrGJPf5UYstpW3BvseP9XIFR9VKqUpdASJIE23xb1nd
+  app:
+    build: .
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      - DB__NAME=simple-notifications
+      - DB__PASS=1234
+      - DB__HOST=mysql
+      - DB__PORT=3306
+      - TEST_TOKEN=dFD_xVCueR8:APA91bEmLFf7-7R--HO3PFsVGacKHCnJ0K2bhsdRaM7hhgRbgeZijbk1jysjqylQU36K58FFQeooqIub3a180JeTWbfPK37YoVEW6M1cM5TfgH1P1kd26eYnghh0m437uJ5CL3usKhzb
+      - WEBHOOK=https://fcm.googleapis.com/fcm/send
+      - AUTH_HEADER=key=AAAA_0UuTtQ:APA91bEaPoxKJeT00DAgRpQXC4dfJaNqsRUkxNj6UMe-IUh1CfcQsJ3AZMTceT9HX2u06mznkr08-Ee_mpV9rmJKa4JSWmvjszrGJPf5UYstpW3BvseP9XIFR9VKqUpdASJIE23xb1nd
   mysql:
     build: ./mysql
     ports:
